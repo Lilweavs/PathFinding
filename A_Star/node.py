@@ -22,8 +22,6 @@ class Node:
         self.f = self.g + self.h
         self.parent = parent
 
-
-
 class Map:
     def __init__(self, size=(10, 10)):
         self.fig = plt.figure()
@@ -40,7 +38,12 @@ class Map:
                              [0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
                              [0, 1, 1, 0, 1, 0, 0, 0, 0, 0],
                              [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]])
-        
+        self.map = np.zeros((10,10))
+        self.map = np.array([[0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0]])
+        self.size = self.map.shape
     #     self.rect = []
     #     self.size = size
     #     self.generate()
