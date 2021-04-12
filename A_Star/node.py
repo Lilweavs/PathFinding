@@ -6,25 +6,30 @@ from matplotlib.widgets import Button
 from matplotlib.patches import Rectangle
 
 class Node:
-    def __init__(self, loc, sn=np.array([0, 0]), en=np.array([0, 0]), parent=np.array([0, 0]), child=np.array([0, 0])):
-        self.loc = np.array([0, 0])
+    def __init__(self, loc, parent=np.array([0, 0])):
+        self.loc = loc
         self.f = 0
         self.g = 0
         self.h = 0
-        self.parent = np.zeros(2)
-        self.child = np.zeros(2)
-        self.cost(sn, en)
+        self.parent = parent
 
-    def cost(self, sn, en):
+    def __repr__(self):
+        return f'Loc: {self.loc}, f: {self.f}, g: {self.g}, h: {self.h}, parent: {self.parent}'
+
+    def added(self, sn, en, parent):
         self.g = np.sum((sn - self.loc)**2)
         self.h = np.sum((en - self.loc)**2)
         self.f = self.g + self.h
-        
+        self.parent = parent
+
+
+
 class Map:
     def __init__(self, size=(10, 10)):
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(111)
-        self.map = np.random.randint(2, size=(10, 10))
+        # self.map = np.random.randint(2, size=(10, 10))
+        self.size = size
         self.map = np.array([[0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
                              [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
                              [0, 0, 0, 1, 0, 1, 1, 0, 1, 0],
@@ -36,20 +41,20 @@ class Map:
                              [0, 1, 1, 0, 1, 0, 0, 0, 0, 0],
                              [0, 1, 0, 0, 0, 0, 1, 0, 0, 0]])
         
-        self.rect = []
-        self.size = size
-        self.generate()
+    #     self.rect = []
+    #     self.size = size
+    #     self.generate()
 
-    def generate(self):
-        for i, row in enumerate(self.map):
-            print(row)
-            for j, col in enumerate(row):
-                if col == 1:
-                    self.ax.add_patch(Rectangle((i, j), 1, 1, fc='black'))
-        plt.axis('scaled')
-        plt.xlim([0, 10])
-        plt.ylim([0, 10])
-        plt.show()
+    # def generate(self):
+    #     for i, row in enumerate(self.map):
+    #         print(row)
+    #         for j, col in enumerate(row):
+    #             if col == 1:
+    #                 self.ax.add_patch(Rectangle((i, j), 1, 1, fc='black'))
+    #     plt.axis('scaled')
+    #     plt.xlim([0, 10])
+    #     plt.ylim([0, 10])
+    #     plt.show()
         # rectangle1 = Rectangle((0, 0), 1, 1, fc='black')
 
 
