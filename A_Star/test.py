@@ -7,7 +7,13 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-global ax, start, end
+
+
+
+
+
+
+global ax, start, end, Map
 fig, ax = plt.subplots()
 ax.axis('scaled')
 
@@ -17,18 +23,17 @@ height = int(sys.argv[2])
 ax.set_xlim([0, width])
 ax.set_ylim([0, height])
 
-Map = np.zeros((height, width))
+Map = np.zeros((width , height))
 
 color = 'blue'
 
 # ax.add_patch(Rectangle((0, 0), 1, 1, fc='blue',picker=True))
 
-obsticles = []
+obs = []
 start = Rectangle((0, 0), 1, 1, fc='blue', picker=True)
 end = Rectangle((9, 9), 1, 1, fc='green', picker=True)
 ax.add_patch(start)
 ax.add_patch(end)
-
 
 def onClick(event):
     global ax, start, end
@@ -36,55 +41,45 @@ def onClick(event):
     i = np.floor(event.xdata)
     j = np.floor(event.ydata)
 
-    if (event.inaxes == ax) and (event.button == 1):
+    pose = np.array([i, j])
 
-        if color == 'blue':
-            start.remove()
-            start = Rectangle((i, j), 1, 1, fc=color)
-            ax.add_patch(start)
-            ax.figure.canvas.draw()
-        elif color == 'green':
-            end.remove()
-            end = Rectangle((i, j), 1, 1, fc=color)
-            ax.add_patch(end)
-            ax.figure.canvas.draw()
+    if (event.inaxes == ax):
+        if (event.button == 1):
+            if color == 'black':
+                if len(obs) == 0:
+                    rect = Rectangle(pose, 1, 1, fc=color)
+                    obs.append(rect)
+                    ax.add_patch(rect)
+                else:
+                    tTable = [np.array_equal(pose, rect.xy) for rect in obs]
 
+                    if not tTable.count(True):
+                        rect = Rectangle(pose, 1, 1, fc=color)
+                        obs.append(rect)
+                        ax.add_patch(rect)
+            elif color == 'blue':
+                start.remove()
+                start = Rectangle(pose, 1, 1, fc=color)
+                ax.add_patch(start)
+            else:
+                end.remove()
+                end = Rectangle(pose, 1, 1, fc=color)
+                ax.add_patch(end)
+        
+        elif (event.button == 3):
 
             print(f'X: {np.floor(event.xdata)}, Y: {np.floor(event.ydata)}')
 
-            patches = ax.patches
-            
-            if len(patches) == 0:
-                rect = Rectangle((i, j), 1, 1, fc=color, picker=True)
-                obsticles.append(rect)
-                ax.add_patch(rect)
+            if len(obs) == 0:
+                pass
+            else:
 
-            # print(patches)
-            pose = np.array([i, j])
-            truth_table = [np.array_equal(patch.xy, pose) for patch in patches]
-
-            print(event)
-
-            if not np.any(truth_table):
-                rect = Rectangle((i, j), 1, 1, fc=color, picker=True)
-                obsticles.append(rect)
-                ax.add_patch(rect)
-
-        
-            elif (event.inaxes == ax) and (event.button == 3):
-
-                obsticles[-1].remove()
-                obsticles.pop()
+                for idx, rect in enumerate(obs):
+                    if np.array_equal(pose, rect.xy):
+                        rect.remove()
+                        obs.pop(idx)
 
     ax.figure.canvas.draw()
-
-def onPick(event):
-    global ax
-    print(event)
-    # print(event.artist)
-    event.artist.remove()
-    ax.figure.canvas.draw()
-    # print(event.artist)
 
 # class Index(object):
 #     ind = 0
@@ -102,10 +97,42 @@ def onPick(event):
 #         ydata = np.sin(2*np.pi*freqs[i]*t)
 #         l.set_ydata(ydata)
 #         plt.draw()
+
 plt.subplots_adjust(left=0.3)
 axcolor = 'lightgoldenrodyellow'
 rax = plt.axes([0.05, 0.7, 0.15, 0.15], facecolor=axcolor)
 radio = RadioButtons(rax, ('Start', 'End', 'Obs'))
+
+
+def setMap(event):
+    global ax, Map
+    ax.set_title('Working')
+    # plt.title('Working!!')
+    ax.figure.canvas.draw()
+
+    for rect in obs:
+        i, j = [int(x) for x in rect.xy]
+        Map[i, j] = 1
+
+    print(Map)
+
+
+
+
+def runAstar(event):
+    pass
+
+axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
+axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
+bnext = Button(axnext, 'Next')
+bnext.on_clicked(setMap)
+bprev = Button(axprev, 'Previous')
+bprev.on_clicked(runAstar)
+
+
+
+
+
 
 def do(label):
     global color
@@ -120,6 +147,13 @@ def do(label):
 radio.on_clicked(do)
 
 cid = fig.canvas.mpl_connect('button_press_event', onClick)
-# cid2 = fig.canvas.mpl_connect('pick_event', onPick)
 
 plt.show()
+
+
+
+
+
+if __name__ == "__main__":
+
+    pass
