@@ -78,7 +78,7 @@ class A_star:
                 # Set node cost parameters f, g, h
                 adjacent_node.g = current_node.g + np.sum((adjacent_node.loc - current_node.loc)**2)
                 adjacent_node.h = np.sum((adjacent_node.loc - self.end_node)**2)
-                adjacent_node.f = adjacent_node.g + adjacent_node.h
+                adjacent_node.f = 2*adjacent_node.g + adjacent_node.h
                 
                 exists, idx = self.inOpen(adjacent_node)
                 if exists:
@@ -89,7 +89,7 @@ class A_star:
                         self.open_list[idx].parent = current_node.loc
                         self.open_list[idx].g = current_node.g + np.sum((self.open_list[idx].loc - current_node.loc)**2)#self.open_list[idx].parent)**2)
                         self.open_list[idx].h = np.sum((self.open_list[idx].loc - self.end_node)**2)
-                        self.open_list[idx].f = self.open_list[idx].g + self.open_list[idx].h
+                        self.open_list[idx].f = 2*self.open_list[idx].g + self.open_list[idx].h
                 else:
                     self.open_list = np.append(self.open_list, adjacent_node)
             
