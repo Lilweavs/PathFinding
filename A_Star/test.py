@@ -17,13 +17,13 @@ global ax, start, end, Map
 fig, ax = plt.subplots()
 ax.axis('scaled')
 
-width = int(sys.argv[1])
-height = int(sys.argv[2])
+width = 20
+height = 20
 
 ax.set_xlim([0, width])
 ax.set_ylim([0, height])
 
-Map = np.zeros((width , height))
+Map = np.zeros((height , width))
 
 color = 'blue'
 
@@ -57,6 +57,7 @@ def onClick(event):
                         rect = Rectangle(pose, 1, 1, fc=color)
                         obs.append(rect)
                         ax.add_patch(rect)
+
             elif color == 'blue':
                 start.remove()
                 start = Rectangle(pose, 1, 1, fc=color)
@@ -67,8 +68,6 @@ def onClick(event):
                 ax.add_patch(end)
         
         elif (event.button == 3):
-
-            print(f'X: {np.floor(event.xdata)}, Y: {np.floor(event.ydata)}')
 
             if len(obs) == 0:
                 pass
@@ -112,7 +111,7 @@ def setMap(event):
 
     for rect in obs:
         i, j = [int(x) for x in rect.xy]
-        Map[i, j] = 1
+        Map[j, i] = 1
 
     print(Map)
 
@@ -142,6 +141,7 @@ def do(label):
         color = 'green'
     else:
         color = 'black'
+
 
 
 radio.on_clicked(do)
