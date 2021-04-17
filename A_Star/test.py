@@ -9,8 +9,6 @@ import numpy as np
 import sys
 
 
-
-
 class Maze:
 
     def __init__(self, rows, cols):
@@ -18,7 +16,8 @@ class Maze:
         self.rows = rows
         self.start = Rectangle((0, 0), 1, 1, fc='blue', picker=True)
         self.end = end = Rectangle((cols-1, rows-1), 1, 1, fc='green', picker=True)
-        self.fig, self.ax = plt.subplots()
+        self.fig, self.ax = plt.subplots(figsize=(5,4), dpi=200)
+        self.fig.tight_layout()
         self.map = np.zeros((cols, rows))
         self.color = 'blue'
         self.obs = []
@@ -110,7 +109,5 @@ class Maze:
 if __name__ == "__main__":
 
     n = Maze(10, 20)
-
-
 
     plt.show()

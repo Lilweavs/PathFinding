@@ -2,6 +2,21 @@
 
 import node as n
 import numpy as np
+import matplotlib.pyplot as plt
+
+"""
+clear A_star after loop call
+
+print(Start, end location)
+
+change name conventions and fix class system
+
+add vizualizations
+
+
+"""
+
+
 
 class A_star:
     def __init__(self):
@@ -19,7 +34,7 @@ class A_star:
                                   [ 1, -1 ],
                                   [ 1,  0 ],
                                   [ 1,  1 ]])
-        self.map = n.Map()
+        self.map = np.array([])
 
     def gen_adjacent_nodes(self, node):
         node_loc = self.node_gen + node.loc
@@ -27,8 +42,8 @@ class A_star:
         self.adjacent_list = np.array([], dtype=object)
 
         for loc in node_loc:
-            if  ((loc[0] >= 0) and (loc[1] >= 0) and (loc[0] < self.map.size[0]) and (loc[1] < self.map.size[1])):
-                if not (self.map.map[loc[0], loc[1]] == 1):
+            if  ((loc[0] >= 0) and (loc[1] >= 0) and (loc[0] < self.map.shape[0]) and (loc[1] < self.map.shape[1])):
+                if not (self.map[loc[0], loc[1]] == 1):
                     self.adjacent_list = np.append(self.adjacent_list, n.Node(loc=loc, parent=node.loc))
 
     def loop(self):
@@ -114,10 +129,19 @@ class A_star:
                 return True
         return False       
 
-def main():
-    pathFinder = A_star()
+# def main():
+#     pathFinder = A_star()
 
-    pathFinder.loop()
+    
+
+
+
+#     pathFinder.loop()
 
 if __name__ == "__main__":
-    main()
+    astar = A_star()
+    maze = n.Maze(10,20, astar)
+
+
+
+    plt.show()
