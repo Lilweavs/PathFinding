@@ -11,149 +11,106 @@ import sys
 
 
 
+class Maze:
 
+    def __init__(self, rows, cols):
+        self.cols = cols
+        self.rows = rows
+        self.start = Rectangle((0, 0), 1, 1, fc='blue', picker=True)
+        self.end = end = Rectangle((cols-1, rows-1), 1, 1, fc='green', picker=True)
+        self.fig, self.ax = plt.subplots()
+        self.map = np.zeros((cols, rows))
+        self.color = 'blue'
+        self.obs = []
 
-global ax, start, end, Map
-fig, ax = plt.subplots()
-ax.axis('scaled')
+        self.setGrid()
 
-width = 20
-height = 20
+    def setGrid(self):
+        self.ax.axis('scaled')
+        self.ax.set_xlim([0, self.cols])
+        self.ax.set_ylim([0, self.rows])
+        self.ax.add_patch(self.start)
+        self.ax.add_patch(self.end)
+        self.fig.subplots_adjust(left=0.2)
 
-ax.set_xlim([0, width])
-ax.set_ylim([0, height])
+        # axcolor = 'lightgoldenrodyellow'
+        self.radio_axis = plt.axes([0.05, 0.4, 0.1, 0.2])
+        self.radio_axis.axis('scaled')
+        self.button1_axis = plt.axes([0.05, 0.65, 0.1, 0.075])
+        # button2_axis = plt.axes([0.81, 0.05, 0.1, 0.075])
+        self.radio = RadioButtons(self.radio_axis, ('Start', 'End', 'Obs'))
+        self.radio.on_clicked(self.setColor)
+  
+        self.bnext = Button(self.button1_axis, 'Run')
+        self.bnext.on_clicked(self.setMap)
+        # bprev = Button(axprev, 'Previous')
+        cid = self.fig.canvas.mpl_connect('button_press_event', self.onClick)
+        size = self.fig.get_size_inches()
+        print(size)
+        # bprev.on_clicked(runAstar)
 
-Map = np.zeros((height , width))
+    def onClick(self, event):
 
-color = 'blue'
+        i = np.floor(event.xdata)
+        j = np.floor(event.ydata)
 
-# ax.add_patch(Rectangle((0, 0), 1, 1, fc='blue',picker=True))
+        pose = np.array([i, j])
 
-obs = []
-start = Rectangle((0, 0), 1, 1, fc='blue', picker=True)
-end = Rectangle((9, 9), 1, 1, fc='green', picker=True)
-ax.add_patch(start)
-ax.add_patch(end)
+        if (event.inaxes == self.ax):
+            if (event.button == 1):
+                if self.color == 'black':
+                    if len(self.obs) == 0:
+                        rect = Rectangle(pose, 1, 1, fc=self.color)
+                        self.obs.append(rect)
+                        self.ax.add_patch(rect)
+                    else:
+                        tTable = [np.array_equal(pose, rect.xy) for rect in self.obs]
 
-def onClick(event):
-    global ax, start, end
+                        if not tTable.count(True):
+                            rect = Rectangle(pose, 1, 1, fc=self.color)
+                            self.obs.append(rect)
+                            self.ax.add_patch(rect)
 
-    i = np.floor(event.xdata)
-    j = np.floor(event.ydata)
-
-    pose = np.array([i, j])
-
-    if (event.inaxes == ax):
-        if (event.button == 1):
-            if color == 'black':
-                if len(obs) == 0:
-                    rect = Rectangle(pose, 1, 1, fc=color)
-                    obs.append(rect)
-                    ax.add_patch(rect)
+                elif self.color == 'blue':
+                    self.start.remove()
+                    self.start = Rectangle(pose, 1, 1, fc=self.color)
+                    self.ax.add_patch(self.start)
                 else:
-                    tTable = [np.array_equal(pose, rect.xy) for rect in obs]
+                    self.end.remove()
+                    self.end = Rectangle(pose, 1, 1, fc=self.color)
+                    self.ax.add_patch(self.end)
+            
+            elif (event.button == 3):
 
-                    if not tTable.count(True):
-                        rect = Rectangle(pose, 1, 1, fc=color)
-                        obs.append(rect)
-                        ax.add_patch(rect)
+                if len(self.obs) == 0:
+                    pass
+                else:
+                    for idx, rect in enumerate(self.obs):
+                        if np.array_equal(pose, rect.xy):
+                            rect.remove()
+                            self.obs.pop(idx)
 
-            elif color == 'blue':
-                start.remove()
-                start = Rectangle(pose, 1, 1, fc=color)
-                ax.add_patch(start)
-            else:
-                end.remove()
-                end = Rectangle(pose, 1, 1, fc=color)
-                ax.add_patch(end)
-        
-        elif (event.button == 3):
+        self.ax.figure.canvas.draw()
 
-            if len(obs) == 0:
-                pass
-            else:
+    def setMap(self, event):
+        for rect in self.obs:
+            i, j = [int(x) for x in rect.xy]
+            self.map[i, j] = 1
+        print(self.map)
 
-                for idx, rect in enumerate(obs):
-                    if np.array_equal(pose, rect.xy):
-                        rect.remove()
-                        obs.pop(idx)
-
-    ax.figure.canvas.draw()
-
-# class Index(object):
-#     ind = 0
-
-#     def next(self, event):
-#         self.ind += 1
-#         i = self.ind % len(freqs)
-#         ydata = np.sin(2*np.pi*freqs[i]*t)
-#         l.set_ydata(ydata)
-#         plt.draw()
-
-#     def prev(self, event):
-#         self.ind -= 1
-#         i = self.ind % len(freqs)
-#         ydata = np.sin(2*np.pi*freqs[i]*t)
-#         l.set_ydata(ydata)
-#         plt.draw()
-
-plt.subplots_adjust(left=0.3)
-axcolor = 'lightgoldenrodyellow'
-rax = plt.axes([0.05, 0.7, 0.15, 0.15], facecolor=axcolor)
-radio = RadioButtons(rax, ('Start', 'End', 'Obs'))
-
-
-def setMap(event):
-    global ax, Map
-    ax.set_title('Working')
-    # plt.title('Working!!')
-    ax.figure.canvas.draw()
-
-    for rect in obs:
-        i, j = [int(x) for x in rect.xy]
-        Map[j, i] = 1
-
-    print(Map)
-
-
-
-
-def runAstar(event):
-    pass
-
-axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
-axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
-bnext = Button(axnext, 'Next')
-bnext.on_clicked(setMap)
-bprev = Button(axprev, 'Previous')
-bprev.on_clicked(runAstar)
-
-
-
-
-
-
-def do(label):
-    global color
-    if label == "Start":
-        color = 'blue'
-    elif label == "End":
-        color = 'green'
-    else:
-        color = 'black'
-
-
-
-radio.on_clicked(do)
-
-cid = fig.canvas.mpl_connect('button_press_event', onClick)
-
-plt.show()
-
-
-
+    def setColor(self, label):
+        if label == "Start":
+            self.color = 'blue'
+        elif label == "End":
+            self.color = 'green'
+        else:
+            self.color = 'black'
 
 
 if __name__ == "__main__":
 
-    pass
+    n = Maze(10, 20)
+
+
+
+    plt.show()
