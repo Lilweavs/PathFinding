@@ -33,7 +33,11 @@ class Maze:
         self.cols = cols
         self.rows = rows
         self.start = Rectangle((0, 0), 1, 1, fc='blue', picker=True)
-        self.end = end = Rectangle((cols-1, rows-1), 1, 1, fc='green', picker=True)
+        self.end = Rectangle((cols-1, rows-1), 1, 1, fc='green', picker=True)
+        self.visited = []
+        self.notVisited = []
+
+
         self.fig, self.ax = plt.subplots(figsize=(5,4), dpi=200)
         self.fig.tight_layout()
         self.map = np.zeros((cols, rows))
@@ -46,9 +50,11 @@ class Maze:
         self.ax.axis('scaled')
         self.ax.set_xlim([0, self.cols])
         self.ax.set_ylim([0, self.rows])
-        self.ax.add_patch(self.start)
-        self.ax.add_patch(self.end)
         self.fig.subplots_adjust(left=0.2)
+
+        # self.fig.canvas.draw()
+
+        self.bg = self.fig.canvas.copy_from_bbox(self.fig.bbox)
 
         # axcolor = 'lightgoldenrodyellow'
         self.radio_axis = plt.axes([0.05, 0.4, 0.1, 0.2])
@@ -57,14 +63,16 @@ class Maze:
         # button2_axis = plt.axes([0.81, 0.05, 0.1, 0.075])
         self.radio = RadioButtons(self.radio_axis, ('Start', 'End', 'Obs'))
         self.radio.on_clicked(self.setColor)
-  
+
         self.bnext = Button(self.button1_axis, 'Run')
         self.bnext.on_clicked(self.setMap)
         # bprev = Button(axprev, 'Previous')
         cid = self.fig.canvas.mpl_connect('button_press_event', self.onClick)
-        size = self.fig.get_size_inches()
-        print(size)
+        # size = self.fig.get_size_inches()
+        # print(size)
         # bprev.on_clicked(runAstar)
+        self.ax.add_patch(self.start)
+        self.ax.add_patch(self.end)
 
     def onClick(self, event):
 
@@ -110,14 +118,49 @@ class Maze:
         self.ax.figure.canvas.draw()
 
     def setMap(self, event):
+        self.solver.reset()
         for rect in self.obs:
             i, j = [int(x) for x in rect.xy]
             self.map[i, j] = 1
-        self.solver.map = self.map
-        self.solver.start_node = np.array(self.start.xy)
-        self.solver.end_node = np.array(self.end.xy)
-        self.solver.loop()
-        # print(self.map)
+        self.solver.initialize(self.start.xy, self.end.xy, self.map)
+        
+        self.solve()
+
+
+    def solve(self):
+
+        for i in range(40):
+            self.solver.iterate()
+            self.onIter()
+
+    def onIter(self):
+
+        if not len(self.visited) == 0:
+            for patch in self.visited:
+                patch.remove()        
+            self.visited = []
+
+
+        for node in self.solver.open_list:
+            rect = Rectangle((node.loc), 1, 1, fc='lightsteelblue')
+            self.visited.append(rect)
+            self.ax.add_patch(rect)
+            self.ax.draw_artist(rect)
+
+        if not len(self.notVisited) == 0:
+            for patch in self.notVisited:
+                patch.remove()
+            self.notVisited = []
+        
+        for node in self.solver.closed_list:
+            rect = Rectangle((node.loc), 1, 1, fc='lightgreen')
+            self.notVisited.append(rect)
+            self.ax.add_patch(rect)
+            self.ax.draw_artist(rect)
+
+        self.fig.canvas.blit(self.fig.bbox)
+        self.fig.canvas.restore_region(self.bg)
+        # self.ax.figure.canvas.draw()
 
     def setColor(self, label):
         if label == "Start":
@@ -126,6 +169,7 @@ class Maze:
             self.color = 'green'
         else:
             self.color = 'black'
+
 
 class Map:
     def __init__(self, size=(10, 10)):

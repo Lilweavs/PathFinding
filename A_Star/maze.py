@@ -20,12 +20,13 @@ add vizualizations
 
 class A_star:
     def __init__(self):
-        self.start_node = np.array([0, 1])
-        self.end_node = np.array([2, 6])
+        self.start_node = np.array([0, 0])
+        self.end_node = np.array([1, 1])
         self.open_list = np.array([], dtype=object)
         self.closed_list = np.array([], dtype=object)
         self.adjacent_list = np.array([], dtype=object)
-        self.open_list = np.append(self.open_list, n.Node(self.start_node, parent=self.start_node))
+        self.open_list = np.array([], dtype=object)#np.append(self.open_list, n.Node(self.start_node, parent=self.start_node))
+
         self.node_gen = np.array([[-1, -1 ],
                                   [-1,  0 ],
                                   [-1,  1 ],
@@ -35,6 +36,17 @@ class A_star:
                                   [ 1,  0 ],
                                   [ 1,  1 ]])
         self.map = np.array([])
+
+    def reset(self):
+        self.open_list = np.array([], dtype=object)
+        self.closed_list = np.array([], dtype=object)
+        self.adjacent_list = np.array([], dtype=object)
+
+    def initialize(self, start, end, Map):
+        self.map = Map
+        self.start_node = np.array(start)
+        self.end_node = np.array(end)
+        self.open_list = np.append(self.open_list, n.Node(self.start_node, parent=self.start_node))
 
     def gen_adjacent_nodes(self, node):
         node_loc = self.node_gen + node.loc
@@ -46,9 +58,10 @@ class A_star:
                 if not (self.map[loc[0], loc[1]] == 1):
                     self.adjacent_list = np.append(self.adjacent_list, n.Node(loc=loc, parent=node.loc))
 
-    def loop(self):
+    def iterate(self):
+        
 
-        while not self.open_list.size == 0:
+        if not self.open_list.size == 0:
         # while k in range(6):
             min_f = 1e4
             index = []
@@ -117,6 +130,7 @@ class A_star:
                 print(node)
             print()
 
+
     def inOpen(self, node):
         for i, _node in enumerate(self.open_list):
             if np.array_equal(node.loc, _node.loc):
@@ -129,19 +143,12 @@ class A_star:
                 return True
         return False       
 
-# def main():
-#     pathFinder = A_star()
-
-    
-
-
-
-#     pathFinder.loop()
 
 if __name__ == "__main__":
     astar = A_star()
-    maze = n.Maze(10,20, astar)
+    maze = n.Maze(10, 20, astar)
 
+    
 
 
     plt.show()
