@@ -17,7 +17,6 @@ add vizualizations
 """
 
 
-
 class A_star:
     def __init__(self):
         self.start_node = np.array([0, 0])
@@ -26,7 +25,7 @@ class A_star:
         self.closed_list = np.array([], dtype=object)
         self.adjacent_list = np.array([], dtype=object)
         self.open_list = np.array([], dtype=object)#np.append(self.open_list, n.Node(self.start_node, parent=self.start_node))
-
+        self.current_node = n.Node(self.start_node)
         self.node_gen = np.array([[-1, -1 ],
                                   [-1,  0 ],
                                   [-1,  1 ],
@@ -81,7 +80,7 @@ class A_star:
             idx = hmin.index(min(hmin))
 
             current_node = self.open_list[index[idx]]
-
+            self.current_node = current_node
             if np.array_equal(current_node.loc, self.end_node):
                 print('done')
                 print(f'Current Node {current_node}')

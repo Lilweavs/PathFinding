@@ -9,10 +9,10 @@ import numpy as np
 import sys
 
 
-plt.plot([0.5,1.5,2.5,3.5],[0.5,1.5,2.5,3.5], marker='s', markersize=30, fillstyle='full')
+plt.plot([0,1,2,3] , [0,1,2,3], marker='o', markersize=30, fillstyle='full')
 plt.axis('scaled')
-plt.xlim([0,10])
-plt.ylim([0,10])
+plt.xlim([-1,10])
+plt.ylim([-1,10])
 plt.show()
 # class Maze:
 

@@ -54,7 +54,7 @@ class Maze:
 
         # self.fig.canvas.draw()
 
-        self.bg = self.fig.canvas.copy_from_bbox(self.fig.bbox)
+
 
         # axcolor = 'lightgoldenrodyellow'
         self.radio_axis = plt.axes([0.05, 0.4, 0.1, 0.2])
@@ -71,8 +71,9 @@ class Maze:
         # size = self.fig.get_size_inches()
         # print(size)
         # bprev.on_clicked(runAstar)
-        self.ax.add_patch(self.start)
-        self.ax.add_patch(self.end)
+        start = self.ax.add_patch(self.start)
+        end = self.ax.add_patch(self.end)
+        self.bg = self.fig.canvas.copy_from_bbox(self.fig.bbox)
 
     def onClick(self, event):
 
@@ -129,9 +130,13 @@ class Maze:
 
     def solve(self):
 
-        for i in range(40):
+        while not len(self.solver.open_list) == 0:
             self.solver.iterate()
+            if np.array_equal(self.solver.current_node.loc ,self.end.xy):
+                print('done')
+                break
             self.onIter()
+
 
     def onIter(self):
 
@@ -139,7 +144,6 @@ class Maze:
             for patch in self.visited:
                 patch.remove()        
             self.visited = []
-
 
         for node in self.solver.open_list:
             rect = Rectangle((node.loc), 1, 1, fc='lightsteelblue')
