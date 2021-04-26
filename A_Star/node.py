@@ -21,9 +21,9 @@ class Node:
         return f'Loc: {self.loc}, f: {self.f}, g: {self.g}, h: {self.h}, parent: {self.parent}'
 
     def added(self, sn, en, parent):
-        self.g = np.sum((sn - self.loc)**2)
-        self.h = np.sum((en - self.loc)**2)
-        self.f = self.g + self.h
+        self.g = np.linalg.norm(sn - self.loc)**2
+        self.h = np.linalg.norm(en - self.loc)**2
+        self.f = int(self.g + self.h)
         self.parent = parent
 
 
@@ -54,19 +54,20 @@ class Maze:
 
         # self.fig.canvas.draw()
 
-
-
         # axcolor = 'lightgoldenrodyellow'
         self.radio_axis = plt.axes([0.05, 0.4, 0.1, 0.2])
         self.radio_axis.axis('scaled')
         self.button1_axis = plt.axes([0.05, 0.65, 0.1, 0.075])
+        self.button2_axis = plt.axes([0.05, 0.3, 0.1, 0.075])
         # button2_axis = plt.axes([0.81, 0.05, 0.1, 0.075])
         self.radio = RadioButtons(self.radio_axis, ('Start', 'End', 'Obs'))
         self.radio.on_clicked(self.setColor)
 
-        self.bnext = Button(self.button1_axis, 'Run')
-        self.bnext.on_clicked(self.setMap)
-        # bprev = Button(axprev, 'Previous')
+
+        self.bnext = Button(self.button1_axis, 'Step')
+        self.bnext.on_clicked(self.Step)
+        self.bprev = Button(self.button2_axis, 'Load')
+        self.bprev.on_clicked(self.setMap)
         cid = self.fig.canvas.mpl_connect('button_press_event', self.onClick)
         # size = self.fig.get_size_inches()
         # print(size)
@@ -74,6 +75,7 @@ class Maze:
         start = self.ax.add_patch(self.start)
         end = self.ax.add_patch(self.end)
         self.bg = self.fig.canvas.copy_from_bbox(self.fig.bbox)
+
 
     def onClick(self, event):
 
@@ -124,18 +126,21 @@ class Maze:
             i, j = [int(x) for x in rect.xy]
             self.map[i, j] = 1
         self.solver.initialize(self.start.xy, self.end.xy, self.map)
-        
-        self.solve()
+        print('Map Loaded')
+        # self.solve()
 
 
-    def solve(self):
+    def Step(self, event):
 
-        while not len(self.solver.open_list) == 0:
-            self.solver.iterate()
-            if np.array_equal(self.solver.current_node.loc ,self.end.xy):
-                print('done')
-                break
-            self.onIter()
+        self.solver.iterate()
+        self.onIter()
+    
+        # while not len(self.solver.open_list) == 0:
+        #     self.solver.iterate()
+        #     if np.array_equal(self.solver.current_node.loc ,self.end.xy):
+        #         print('done')
+        #         break
+        #     self.onIter()
 
 
     def onIter(self):
@@ -147,9 +152,13 @@ class Maze:
 
         for node in self.solver.open_list:
             rect = Rectangle((node.loc), 1, 1, fc='lightsteelblue')
+            # text = plt.text(node.loc[0], node.loc[1], str(node.f))
+            self.ax.annotate(f'{node.f}', xy=(rect.get_x(), rect.get_y()), ha='center', textcoords='offset points', xytext=(7,5), fontsize=4)
             self.visited.append(rect)
+            # self.ax.add_patch(text)
             self.ax.add_patch(rect)
             self.ax.draw_artist(rect)
+            # self.ax.draw_artist(text)
 
         if not len(self.notVisited) == 0:
             for patch in self.notVisited:
