@@ -61,11 +61,11 @@ class A_star:
         
         if not self.open_list.size == 0:
         # while k in range(6):
-            min_f = 1e4
+            min_f = 0
             index = []
             # In open_list find the lowest "F" value
             for i, node in enumerate(self.open_list):
-                if (node.f < min_f):
+                if (node.f > min_f):
                     index = i
                     min_f = node.f
 
@@ -81,58 +81,57 @@ class A_star:
             idx = hmin.index(min(hmin))
 
             # Index all nodes with min_f so that they are all explored
-
-            for current_node in explore:
                 
-                # current_node = self.open_list[index[idx]]
-                self.current_node = current_node
-                if np.array_equal(current_node.loc, self.end_node):
-                    print('done')
-                    print(f'Current Node {current_node}')
-                    return
+            current_node = self.open_list[index[idx]]
+            self.current_node = current_node
+            if np.array_equal(current_node.loc, self.end_node):
+                print('done')
+                print(f'Current Node {current_node}')
+                return
 
-                # if np.array_equal(q.loc, self.end_node):
-                #     print('finished')
+            # if np.array_equal(q.loc, self.end_node):
+            #     print('finished')
 
-                #Put visited node on the closed list and then generate adjacent nodes
-                print(f'Chosen node: {current_node}')
-                self.open_list = np.delete(self.open_list, index)
-                self.closed_list = np.append(self.closed_list, current_node)
-                self.gen_adjacent_nodes(current_node)
+            #Put visited node on the closed list and then generate adjacent nodes
+            print(f'Chosen node: {current_node}')
+            self.open_list = np.delete(self.open_list, index)
+            self.closed_list = np.append(self.closed_list, current_node)
+            self.gen_adjacent_nodes(current_node)
 
-                ## Logic for adjacent nodes
-                for adjacent_node in self.adjacent_list:
+            ## Logic for adjacent nodes
+            for adjacent_node in self.adjacent_list:
 
-                    if self.inClosed(adjacent_node):
-                        print('Ignore: In closed list')
+                if self.inClosed(adjacent_node):
+                    print('Ignore: In closed list')
+                    continue
+                # Heuristic functions
+
+                # Set node cost parameters f, g, h
+                adjacent_node.g = current_node.g + 1 #np.linalg.norm(adjacent_node.loc - current_node.loc)**2
+                adjacent_node.h = self.heuristic(current_node)
+                adjacent_node.f = adjacent_node.g + adjacent_node.h
+                
+                exists, idx = self.inOpen(adjacent_node)
+                if exists:
+                    print('In open list')
+                    if adjacent_node.g > self.open_list[idx].g:
                         continue
-                    
-                    # Set node cost parameters f, g, h
-                    adjacent_node.g = np.linalg.norm(current_node.g + np.linalg.norm(adjacent_node.loc - current_node.loc)**2)**2
-                    adjacent_node.h = np.linalg.norm(adjacent_node.loc - self.end_node)**2
-                    adjacent_node.f = int(adjacent_node.g + adjacent_node.h)
-                    
-                    exists, idx = self.inOpen(adjacent_node)
-                    if exists:
-                        print('In open list')
-                        if node.g > self.open_list[idx].g:
-                            continue
-                        else:
-                            self.open_list[idx].parent = current_node.loc
-                            self.open_list[idx].g = np.linalg.norm(current_node.g + np.linalg.norm(self.open_list[idx].loc - current_node.loc)**2)**2#self.open_list[idx].parent)**2)
-                            self.open_list[idx].h = np.linalg.norm(self.open_list[idx].loc - self.end_node)**2
-                            self.open_list[idx].f = int((self.open_list[idx].g + self.open_list[idx].h))
                     else:
-                        self.open_list = np.append(self.open_list, adjacent_node)
-                
-                print("Open List")
-                for i, node in enumerate(self.open_list):
+                        self.open_list[idx].parent = current_node.loc
+                        self.open_list[idx].g = current_node.g + 1 # np.linalg.norm(self.open_list[idx].loc - current_node.loc)**2#self.open_list[idx].parent)**2)
+                        self.open_list[idx].h = self.heuristic(self.open_list[idx])
+                        self.open_list[idx].f = (self.open_list[idx].g + self.open_list[idx].h)
+                else:
+                    self.open_list = np.append(self.open_list, adjacent_node)
+            
+            print("Open List")
+            for i, node in enumerate(self.open_list):
 
-                    print(node)
-                print("Closed List")
-                for i, node in enumerate(self.closed_list):
-                    print(node)
-                print()
+                print(node)
+            print("Closed List")
+            for i, node in enumerate(self.closed_list):
+                print(node)
+            print()
 
 
     def inOpen(self, node):
@@ -147,7 +146,12 @@ class A_star:
                 return True
         return False       
 
-
+    def heuristic(self, node):
+        D = 1
+        D2 = np.sqrt(2)
+        dx = abs(node.loc[0] - self.end_node[0])
+        dy = abs(node.loc[1] - self.end_node[1])
+        return D * (dx + dy) + (D2 - 2 * D) * min(dx, dy)
 if __name__ == "__main__":
     astar = A_star()
     maze = n.Maze(10, 20, astar)
