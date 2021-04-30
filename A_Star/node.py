@@ -7,11 +7,14 @@ from matplotlib.widgets import RadioButtons
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-import numpy as np
+from array import array
+from operator import attrgetter
+
 
 class Node:
-    def __init__(self, loc, parent=np.array([0, 0])):
-        self.loc = loc
+    def __init__(self, x, y, parent=np.array([0, 0])):
+        self.x = x
+        self.y = y
         self.f = 0
         self.g = 0
         self.h = 0
@@ -20,12 +23,11 @@ class Node:
     def __repr__(self):
         return f'Loc: {self.loc}, f: {self.f}, g: {self.g}, h: {self.h}, parent: {self.parent}'
 
-    def added(self, sn, en, parent):
-        self.g = np.linalg.norm(sn - self.loc)**2
-        self.h = np.linalg.norm(en - self.loc)**2
-        self.f = int(self.g + self.h)
-        self.parent = parent
-
+    # def added(self, sn, en, parent):
+    #     self.g = np.linalg.norm(sn - self.loc)**2
+    #     self.h = np.linalg.norm(en - self.loc)**2
+    #     self.f = int(self.g + self.h)
+    #     self.parent = parent
 
 class Maze:
 

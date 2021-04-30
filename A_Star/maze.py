@@ -1,7 +1,7 @@
 #!/usr/env/bin python
 
 import node as n
-import numpy as np
+from numpy import array
 import matplotlib.pyplot as plt
 
 """
@@ -16,41 +16,36 @@ add vizualizations
 
 """
 
+class astar:
 
-class A_star:
-    def __init__(self):
-        self.start_node = np.array([0, 0])
-        self.end_node = np.array([1, 1])
-        self.open_list = np.array([], dtype=object)
-        self.closed_list = np.array([], dtype=object)
-        self.adjacent_list = np.array([], dtype=object)
-        self.open_list = np.array([], dtype=object)#np.append(self.open_list, n.Node(self.start_node, parent=self.start_node))
-        self.current_node = n.Node(self.start_node)
-        self.node_gen = np.array([[-1, -1 ],
-                                  [-1,  0 ],
-                                  [-1,  1 ],
-                                  [ 0, -1 ],
-                                  [ 0,  1 ],
-                                  [ 1, -1 ],
-                                  [ 1,  0 ],
-                                  [ 1,  1 ]])
-        self.map = np.array([])
-
+    def __init__(self, start, end, _map):
+        self.start = start
+        self.end = end
+        self.open_list = []
+        self.closed_list = []
+        self.adjacent_list = []
+        self.map = _map
+        
     def reset(self):
-        self.open_list = np.array([], dtype=object)
-        self.closed_list = np.array([], dtype=object)
-        self.adjacent_list = np.array([], dtype=object)
+        self.open_list = []
+        self.closed_list = []
+        self.adjacent_list = []
 
     def initialize(self, start, end, Map):
         self.map = Map
-        self.start_node = np.array(start)
-        self.end_node = np.array(end)
+        self.start_node = array(start)
+        self.end_node = array(end)
         self.open_list = np.append(self.open_list, n.Node(self.start_node, parent=self.start_node))
 
     def gen_adjacent_nodes(self, node):
-        node_loc = self.node_gen + node.loc
-        
-        self.adjacent_list = np.array([], dtype=object)
+
+        self.adjacent_list = []
+
+        loc = node.loc
+
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                
 
         for loc in node_loc:
             if  ((loc[0] >= 0) and (loc[1] >= 0) and (loc[0] < self.map.shape[0]) and (loc[1] < self.map.shape[1])):
