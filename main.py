@@ -1,5 +1,5 @@
 from src.GUI import PathGUI
-from src.PathFindingAlgorithms import BFS, Dijkstra
+from src.PathFindingAlgorithms import BFS, Dijkstra, Astar
 import matplotlib.pyplot as plt
 
 
@@ -20,8 +20,8 @@ Map=[
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-Map = [[0]*30]*18
-
+# Map = [[0]*30]*18
+Map = [[0]*30]*20
 
 """
 Things to do
@@ -40,5 +40,7 @@ Things to do
 if __name__ == "__main__":
 
     vis = PathGUI(Map, pathFinderType='Dij')
-
+    # n = Astar(Map, (0, 0), (9, 9))
+    # path = n.solve()
+    # print(path)
     plt.show()

@@ -4,7 +4,7 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 import functools
 from math import floor
 import numpy as np
-from src.PathFindingAlgorithms import BFS, Dijkstra
+from src.PathFindingAlgorithms import BFS, Dijkstra, Astar
 
 
 class PathGUI():
@@ -38,18 +38,18 @@ class PathGUI():
         """
         self.fig, self.ax = plt.subplots(figsize=(10,5), dpi=200)
         self.ax.tick_params(axis='both', bottom=False, left=False, labelbottom=False, labelleft=False)
-        self.colors ={'blank': (0, 'white'), 'Wall': (1, '#312F2F'), 'Start': (2, '#3666BF'), 'End': (3, 'green'), 'Visit': (4, 'grey')}
+        self.colors = {'blank': (0, 'white'), 'Wall': (1, '#312F2F'), 'Start': (2, '#1C5D99'), 'End': (3, '#178C23'), 'Path': (4, 'grey'), 'Mud': (5, '#A39171')}
         self.type = 'Start'
 
         cmap = ListedColormap([self.colors[i][1] for i in self.colors])
-        bounds = BoundaryNorm([0, 1, 2, 3, 4, 5], cmap.N) 
+        bounds = BoundaryNorm([0, 1, 2, 3, 4, 5, 6], cmap.N) 
         cmap.set_under(color='w', alpha=0)
         
         self.fig.subplots_adjust(left=0.2)
         self.bkg = self.fig.canvas.copy_from_bbox(self.ax.bbox)
 
         self.radio_axis = self.fig.add_axes([0.05, 0.4, 0.1, 0.2])
-        self.radio = RadioButtons(self.radio_axis, ('Start', 'End', 'Wall'))
+        self.radio = RadioButtons(self.radio_axis, ('Start', 'End', 'Wall', 'Mud'))
         self.radio.on_clicked(self.set_color)
 
         self.fig.canvas.mpl_connect("motion_notify_event", self.on_move)
@@ -81,9 +81,10 @@ class PathGUI():
 
         self.map[self.start] = 2
         self.map[self.goal] = 3
-
         
         self.maze = self.ax.pcolormesh(self.map, edgecolors='black', norm=bounds, cmap=cmap)
+        self.pathLine, = self.ax.plot([], [], color='red')
+        self.scatter = self.ax.scatter([], [], c=[], cmap='viridis')
         self.ax.axis('scaled')
         
 
@@ -110,9 +111,15 @@ class PathGUI():
                     self.map[self.goal] = 0
                     self.goal = tmp
                     self.map[self.goal] = self.colors['End'][0]
-            else:
+
+            elif self.type == 'Wall':
                 if not (tmp == self.start or tmp == self.goal):
                     self.map[tmp] = self.colors['Wall'][0]
+
+            else:
+                if not (tmp == self.start or tmp == self.goal):
+                    self.map[tmp] = self.colors['Mud'][0]
+
         else:
             if not (tmp == self.start or tmp == self.goal):
                 self.map[tmp] = 0
@@ -121,12 +128,34 @@ class PathGUI():
 
 
     def update(self):
-        # self.maze.set_data(self.map)
+        
+        if self.path:
+
+            x, y = zip(*self.path)
+            x = [i + 0.5 for i in x]
+            y = [i + 0.5 for i in y]
+            self.pathLine.set_data(y, x)
+
+            points = np.array([(i[1] + 0.5, i[0] + 0.5) for i in self.pathFinder.closedList])
+
+            # y = [i[1] + 0.5 for i in self.pathFinder.closedList]
+
+            costs = np.array([self.pathFinder.closedList[i][1] for i in self.pathFinder.closedList])
+            # print(costs)
+            self.scatter.set_offsets(points)
+            self.scatter.set_array(costs)
+            # self.visitedNodes.set_data(y, x)
+
+
+
         self.maze.set_array(self.map.flatten())
+        
         # restore background
         self.fig.canvas.restore_region(self.bkg)
         # redraw just the points
         self.ax.draw_artist(self.maze)
+        self.ax.draw_artist(self.pathLine)
+        self.ax.draw_artist(self.scatter)
         # fill in the axes rectangle
         self.fig.canvas.blit(self.ax.bbox)
         # self.fig.canvas.draw()
@@ -142,31 +171,23 @@ class PathGUI():
         self.clicked = False
         if self.inAxis:
 
-            for node in self.path:
-                if not self.map[node] == 1:
-                    self.map[node] = 0
+            # for node in self.path:
+            #     if not self.map[node] == 1:
+            #         self.map[node] = 0
 
             if self.pathFinderType == 'BFS':
                 self.pathFinder = BFS(self.map, self.start, self.goal)
+
             elif self.pathFinderType == 'Dij':
                 self.pathFinder = Dijkstra(self.map, self.start, self.goal)
+
             else:
-                pass
-                # self.pathFinderType == astar(self.map, self.start, self.goal)
-
-
-            # self.pathFinder = BFS(self.map, self.start, self.goal)
-            # self.pathFinder = self.pathFinder(self.map, self.start, self.goal)
+                self.pathFinder = Astar(self.map, self.start, self.goal)
 
             self.path = self.pathFinder.solve()
 
-            if self.path:
-                del self.path[0]
-                del self.path[-1]
-                for node in self.path:
-                    self.map[node] = 4
-            else:
-                print('no path')
+            if not self.path:
+                print('No Path Found!')
 
         self.update()
 
